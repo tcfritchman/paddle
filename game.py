@@ -90,10 +90,20 @@ class Paddle(pygame.sprite.Sprite):
 
     def update(self):
         self._set_position(self.angle)
+        self._draw_self(self.angle)
 
     def _set_position(self, angle):
         self.rect.center = [(CENTER[X] + PADDLE_SWING_RADIUS * math.cos(angle)), (CENTER[Y] + PADDLE_SWING_RADIUS * math.sin(angle))]
 
+    def _draw_self(self, angle):
+        # Draw base circle
+        pygame.draw.circle(self.image, BLUE, [PADDLE_RADIUS, PADDLE_RADIUS], PADDLE_RADIUS)
+        # Calculate position of 'shadow' circle
+        shadow_pos = [int(PADDLE_RADIUS - (PADDLE_SWING_RADIUS * math.cos(angle))), int(PADDLE_RADIUS - (PADDLE_SWING_RADIUS * math.sin(angle)))]
+        # Draw shadow circle on top of base circle using alpha color
+        pygame.draw.circle(self.image, BLACK, shadow_pos, PADDLE_INNER_RADIUS)
+
+        
     def set_angle(self, angle):
         self.angle = angle
 
