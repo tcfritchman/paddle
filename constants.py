@@ -1,3 +1,43 @@
+# constants.py - all game constants
+# Thomas Fritchman
+import pygame
+from pygame.locals import *
+
+# Screen
 FPS = 60
 WINDOWWIDTH = 600
 WINDOWHEIGHT = 600
+CENTER = (WINDOWWIDTH/2, WINDOWHEIGHT/2)
+FOREGROUND_RADIUS = WINDOWWIDTH/2 - WINDOWWIDTH/50
+BOUNDARY_RADIUS = WINDOWWIDTH/2
+
+# Control
+MOUSE_SENSE = 300.0
+
+# Paddle
+PADDLE_RADIUS = 160
+PADDLE_WIDTH = 2*PADDLE_RADIUS
+PADDLE_HEIGHT = 2*PADDLE_RADIUS
+PADDLE_SWING_RADIUS = 380
+
+# Ball
+BALL_RADIUS = 10
+BALL_WIDTH = 2*BALL_RADIUS
+BALL_HEIGHT = 2*BALL_RADIUS
+BALL_SPEED = 2
+
+
+# Color constants
+BLACK = Color(0, 0, 0)
+WHITE = Color(255, 255, 255)
+RED = Color(255, 0, 0)
+GREEN = Color(0, 255, 0)
+BLUE = Color(0, 0, 255)
+CYAN = Color(0, 255, 255)
+YELLOW = Color(255, 255, 0)
+VIOLET = Color(192, 0, 255)
+ORANGE = Color(255, 128, 0)
+
+# Misc.
+X = 0
+Y = 1
