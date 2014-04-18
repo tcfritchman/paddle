@@ -3,6 +3,7 @@ from constants import *
 from utils import *
 from pygame.locals import *
 
+
 def main():
     # Initialize the screen
     print "Initializing..."
@@ -38,9 +39,12 @@ def main():
 
     # Sprite groups
     allsprites = pygame.sprite.Group((paddle, testball))
+    balls = pygame.sprite.Group((testball))
 
-    # Globals
+    global rotation
     rotation = 0.0
+
+
 
     while 1:
         clock.tick(FPS)
@@ -60,11 +64,16 @@ def main():
                 pass
             elif event.type == MOUSEMOTION: 
                 rotation += pygame.mouse.get_rel()[X] / MOUSE_SENSE
+                if rotation >= TWOPI:
+                    rotation -= TWOPI
+                elif rotation < 0:
+                    rotation += TWOPI
                 paddle.set_angle(rotation)
-                #ROTATION = ROTATION % 360
-                print "Rotation" + str(rotation)
+                #print "Rotation" + str(rotation)
 
         allsprites.update()
+
+        paddle_collision(paddle, balls)
         
         screen.blit(background, (0, 0))
         #screen.blit(text, (10, 10))
@@ -72,6 +81,33 @@ def main():
         screen.blit(foreground, (0, 0))
 
         pygame.display.flip()
+
+def paddle_collision(paddle, balls):
+    ballList = balls.sprites()
+
+    for ball in ballList:
+        # is ball in range of paddle?
+        ball_pos = ball.get_position()
+        center_dist_x = CENTER[X] - ball_pos[X]
+        center_dist_y = CENTER[Y] - ball_pos[Y]
+        center_dist = math.sqrt(math.pow(center_dist_y, 2) + math.pow(center_dist_x, 2))
+        
+        # When paddle collision - update ball direction.
+        if pygame.sprite.collide_circle(paddle, ball) and center_dist >= PADDLE_INNER_RADIUS:
+            dif = rotation - ball.get_direction()
+            ball.set_direction((math.pi + ball.get_direction()) - (2 * dif))
+
+
+
+
+
+
+
+
+
+
+
+############ GAME OBJECTS ###########
 
 # Paddle
 # Location on screen determined by it's 'angle' attribute. Angle
@@ -103,7 +139,6 @@ class Paddle(pygame.sprite.Sprite):
         # Draw shadow circle on top of base circle using alpha color
         pygame.draw.circle(self.image, BLACK, shadow_pos, PADDLE_INNER_RADIUS)
 
-        
     def set_angle(self, angle):
         self.angle = angle
 

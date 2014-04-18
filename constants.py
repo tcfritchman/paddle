@@ -1,6 +1,6 @@
 # constants.py - all game constants
 # Thomas Fritchman
-import pygame
+import pygame, math
 from pygame.locals import *
 
 # Screen
@@ -42,3 +42,5 @@ ORANGE = Color(255, 128, 0)
 # Misc.
 X = 0
 Y = 1
+TWOPI = math.pi * 2
+PI = math.pi
