@@ -60,6 +60,23 @@ def main():
                     pygame.display.toggle_fullscreen()
                 if event.key == K_q:
                     pygame.quit()
+
+                # FOR TESTING
+                if event.key == K_LEFT:
+                    rotation += 0.5
+                    if rotation >= TWOPI:
+                        rotation -= TWOPI
+                    elif rotation < 0:
+                        rotation += TWOPI
+                    paddle.set_angle(rotation)
+                if event.key == K_RIGHT:
+                    rotation -= 0.5
+                    if rotation >= TWOPI:
+                        rotation -= TWOPI
+                    elif rotation < 0:
+                        rotation += TWOPI
+                    paddle.set_angle(rotation)
+
             elif event.type == KEYUP:
                 pass
             elif event.type == MOUSEMOTION: 
@@ -93,9 +110,16 @@ def paddle_collision(paddle, balls):
         center_dist = math.sqrt(math.pow(center_dist_y, 2) + math.pow(center_dist_x, 2))
         
         # When paddle collision - update ball direction.
+        # Ball bounces on tangent to paddle arc.
         if pygame.sprite.collide_circle(paddle, ball) and center_dist >= PADDLE_INNER_RADIUS:
             dif = rotation - ball.get_direction()
             ball.set_direction((math.pi + ball.get_direction()) - (2 * dif))
+            # Update position to keep ball from being located inside paddle (bump)
+            bump_dist = center_dist - PADDLE_INNER_RADIUS + BALL_RADIUS
+            bump_dir = -math.atan2(center_dist_x, center_dist_y)
+            print bump_dist, bump_dir
+
+
 
 
 
@@ -183,6 +207,17 @@ class Ball(pygame.sprite.Sprite):
 
     def get_rect(self):
         return self.rect
+
+# Tile
+class Tile(pygame.sprite.Sprite):
+    def __init__(self, loc):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface([TILE_WIDTH, TILE_HEIGHT])
+        self.image.fill(GREEN)
+        self.rect = self.image.get_rect()
+        self.pos = loc
+
+
 
 
 if __name__ == '__main__':
