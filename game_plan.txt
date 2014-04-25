@@ -1,0 +1,34 @@
+Saturday:
+Primary Goal - Implement game mechanics
+    -Blocks
+    -Field generation
+    -Powerup spawning and effect
+        -Multi-ball
+        -No-bounce ball
+    -Proper rectangular paddle
+
+Sunday:
+Primary Goal - Make game fun
+    -Scoring system
+    -Build levels
+    -Fix any annoyances that might crop up
+Secondary Goals
+    -High score system
+    -Cheats?
+    
+Monday:
+Primary Goal - Build menu interface & Write manual
+    -Help screen
+    -Choose level
+        -Show high scores here?
+        
+Tuesday:
+Primary Goal - Make game pretty:
+    -Textures
+    -Background
+    -Sounds
+Seconday Goal
+    -Animations? Flashes? Etc?
+    -Ray trace graphics?
+    -Rotate screen!?
+    
