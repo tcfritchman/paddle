@@ -105,10 +105,16 @@ def paddle_collision(paddle, balls):
     for ball in ballList:
         # is ball in range of paddle?
         ball_pos = ball.get_position()
-        center_dist_x = CENTER[X] - ball_pos[X]
-        center_dist_y = CENTER[Y] - ball_pos[Y]
+        #center_dist_x = CENTER[X] - ball_pos[X]
+        #center_dist_y = CENTER[Y] - ball_pos[Y]
+        center_dist_x = ball_pos[X] - CENTER[X]
+        center_dist_y = ball_pos[Y] - CENTER[Y]
         center_dist = math.sqrt(math.pow(center_dist_y, 2) + math.pow(center_dist_x, 2))
-        
+        center_angle = math.atan2(center_dist_y, center_dist_x)
+        #print center_dist_x, center_dist_y
+        #print center_angle
+        print PADDLE_EDGE_ANGLE
+        """ 
         # When paddle collision - update ball direction.
         # Ball bounces on tangent to paddle arc.
         if pygame.sprite.collide_circle(paddle, ball) and center_dist >= PADDLE_INNER_RADIUS:
@@ -119,14 +125,30 @@ def paddle_collision(paddle, balls):
             bump_dir = -math.atan2(center_dist_x, center_dist_y)
             print bump_dist, bump_dir
 
+        """
 
 
+        # When paddle collision - update ball direction.
+        if abs(center_angle - paddle.angle) < PADDLE_EDGE_ANGLE:
+            print "ANGLE"
+            if center_dist > (math.cos(paddle.angle - center_angle) / PADDLE_SWING_RADIUS):
+                # Collision!
+                print "COLLIDE!"
+                # Update posiition of ball to outside of collision area
+                bump_dist = (PADDLE_SWING_RADIUS - (PADDLE_HEIGHT/2) - BALL_RADIUS - 1) - center_dist
+                bump_dir = paddle.angle - PI
+                old_pos = ball.get_position()
+                new_pos_X = old_pos[X] + (math.cos(bump_dir)*bump_dist)
+                new_pos_Y = old_pos[Y] + (math.sin(bump_dir)*bump_dist)
+                ball.set_position((new_pos_X, new_pos_Y))
+                #print "bump", old_pos, ball.get_position()
+                # Update direction
+                new_dir = paddle.angle-PI-(paddle.angle-ball.get_direction())
+                #print "dir", ball.get_direction(), new_dir
+                ball.set_direction(new_dir)
 
-
-
-
-
-
+        else:
+            print "NOT ANGLE"
 
 
 
@@ -195,12 +217,6 @@ class Paddle(pygame.sprite.Sprite):
         B = (int(Bx), int(By))
         C = (int(Cx), int(Cy))
         D = (int(Dx), int(Dy))
-        pygame.draw.circle(self.image, RED, A, 2)
-        pygame.draw.circle(self.image, GREEN, B, 2)
-        pygame.draw.circle(self.image, BLUE, C, 2)
-        pygame.draw.circle(self.image, YELLOW, D, 2)
-        pygame.draw.circle(self.image, WHITE, (PADDLE_SURF_CENTER, PADDLE_SURF_CENTER)  , 2)
-
         vertices = [A,B,D,C]
         pygame.draw.polygon(self.image, BLUE, vertices)
 
