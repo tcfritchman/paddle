@@ -113,7 +113,7 @@ def paddle_collision(paddle, balls):
 # Location on screen determined by it's 'angle' attribute. Angle
 # cooresponds to the angle of a line drawn from the center of the screen
 # to the center of the paddle circle.
-class Paddle(pygame.sprite.Sprite):
+class oldPaddle(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface([PADDLE_WIDTH, PADDLE_HEIGHT])
@@ -141,6 +141,24 @@ class Paddle(pygame.sprite.Sprite):
 
     def set_angle(self, angle):
         self.angle = angle
+
+class Paddle
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface([PADDLE_SURF_SIZE, PADDLE_SURF_SIZE])
+        self.image.set_colorkey(BLACK)
+        image = self.image.convert_alpha()
+        self.rect = self.image.get_rect()
+        self.angle = 0 # Angle where paddle is located
+        self._set_position(self.angle)
+
+    def update(self):
+
+    def _draw_self(self, angle):
+        # Calculate 4 corners
+        theta = (rotation-(PI/2)) + math.atan2(PADDLE_HEIGHT/2, PADDLE_WIDTH/2)
+        H = math.sqrt(pow(PADDLE_HEIGHT/2,2)+pow(PADDLE_HEIGHT/2,2))
+        A = (PADDLE_SURF_CENTER + (math.cos(theta) * H)
 
 # Ball
 # Updates own position based on it's own speed and direction attributes.
