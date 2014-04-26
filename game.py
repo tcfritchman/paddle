@@ -156,8 +156,7 @@ class oldPaddle(pygame.sprite.Sprite):
         self.rect.center = [(CENTER[X] + PADDLE_SWING_RADIUS * math.cos(angle)), (CENTER[Y] + PADDLE_SWING_RADIUS * math.sin(angle))]
 
     def _draw_self(self, angle):
-        # Draw base circle
-        pygame.draw.circle(self.image, BLUE, [PADDLE_RADIUS, PADDLE_RADIUS], PADDLE_RADIUS)
+        # Draw base circle pygame.draw.circle(self.image, BLUE, [PADDLE_RADIUS, PADDLE_RADIUS], PADDLE_RADIUS)
         # Calculate position of 'shadow' circle
         shadow_pos = [int(PADDLE_RADIUS - (PADDLE_SWING_RADIUS * math.cos(angle))), int(PADDLE_RADIUS - (PADDLE_SWING_RADIUS * math.sin(angle)))]
         # Draw shadow circle on top of base circle using alpha color
@@ -166,7 +165,8 @@ class oldPaddle(pygame.sprite.Sprite):
     def set_angle(self, angle):
         self.angle = angle
 
-class Paddle
+
+class Paddle(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface([PADDLE_SURF_SIZE, PADDLE_SURF_SIZE])
@@ -177,12 +177,39 @@ class Paddle
         self._set_position(self.angle)
 
     def update(self):
+        self._set_position(self.angle)
+        self._draw_self(self.angle)
 
     def _draw_self(self, angle):
-        # Calculate 4 corners
-        theta = (rotation-(PI/2)) + math.atan2(PADDLE_HEIGHT/2, PADDLE_WIDTH/2)
-        H = math.sqrt(pow(PADDLE_HEIGHT/2,2)+pow(PADDLE_HEIGHT/2,2))
-        A = (PADDLE_SURF_CENTER + (math.cos(theta) * H)
+        self.image.fill(BLACK)
+        
+        Ax = PADDLE_SURF_CENTER + (math.cos(PADDLE_HYP_ANGLE - self.angle) * PADDLE_HYP)
+        Ay = PADDLE_SURF_CENTER - (math.sin(PADDLE_HYP_ANGLE - self.angle) * PADDLE_HYP)
+        Bx = Ax - (math.cos(self.angle) * PADDLE_HEIGHT)
+        By = Ay - (math.sin(self.angle) * PADDLE_HEIGHT)
+        Cx = Ax - (math.sin(self.angle) * PADDLE_WIDTH)
+        Cy = Ay + (math.cos(self.angle) * PADDLE_WIDTH)
+        Dx = Cx - (Ax - Bx)
+        Dy = Cy - (Ay - By)
+        A = (int(Ax), int(Ay))
+        B = (int(Bx), int(By))
+        C = (int(Cx), int(Cy))
+        D = (int(Dx), int(Dy))
+        pygame.draw.circle(self.image, RED, A, 2)
+        pygame.draw.circle(self.image, GREEN, B, 2)
+        pygame.draw.circle(self.image, BLUE, C, 2)
+        pygame.draw.circle(self.image, YELLOW, D, 2)
+        pygame.draw.circle(self.image, WHITE, (PADDLE_SURF_CENTER, PADDLE_SURF_CENTER)  , 2)
+
+        vertices = [A,B,D,C]
+        pygame.draw.polygon(self.image, BLUE, vertices)
+
+    def _set_position(self, angle):
+        self.rect.center = [(CENTER[X] + PADDLE_SWING_RADIUS * math.cos(angle)), (CENTER[Y] + PADDLE_SWING_RADIUS * math.sin(angle))]
+
+    def set_angle(self, angle):
+        self.angle = angle
+
 
 # Ball
 # Updates own position based on it's own speed and direction attributes.
