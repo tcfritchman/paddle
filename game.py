@@ -1,7 +1,12 @@
+##### PADDLE #####
+# game.py
+# Thomas Fritchman
+
 import pygame, sys, os, math, random
 from constants import *
 from utils import *
 from pygame.locals import *
+import levels
 
 
 def main():
@@ -10,6 +15,8 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     pygame.display.set_caption("Paddle")
+    pygame.font.init()
+
     
     pygame.mouse.set_visible(False)
     pygame.event.set_grab(True)
@@ -57,8 +64,11 @@ def main():
     testLevel.append([1,0,0,16,0,0,1,1,0,1,0,1,0,1,0])
     testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
 
+    testLevel = levels.L1
+
     # Create game objects
     clock = pygame.time.Clock()
+    hud = HUD()
     paddle = Paddle()
     testball = Ball(BALL_INITIAL_POSITION, 0)
     spawner = Spawner(testLevel)
@@ -87,6 +97,7 @@ def main():
                 if event.key == K_f:
                     pygame.display.toggle_fullscreen()
                 if event.key == K_q:
+                    pygame.font.quit()
                     pygame.quit()
 
                 # FOR TESTING
@@ -144,11 +155,12 @@ def main():
                 #print "Rotation" + str(rotation)
 
         allsprites.update()
+        hud.update()
 
         # Handle Collisions
         foreground_collision(balls, allsprites)
-        paddle_collision(paddle, balls)
-        tile_collision(tiles, balls, allsprites)
+        paddle_collision(paddle, balls, hud)
+        tile_collision(tiles, balls, allsprites, hud)
         if ball_powerup_collision(ball_powerups, balls, allsprites):
             ball = spawner.spawn_ball()
             if ball != None:
@@ -177,12 +189,13 @@ def main():
         #screen.blit(text, (10, 10))
         allsprites.draw(screen)
         screen.blit(foreground, (0, 0))
+        screen.blit(hud.get_image(), HUD_LOCATION)
         pygame.display.flip()
 
         if len(balls.sprites()) < 1:
             print "GAME OVER"
 
-def paddle_collision(paddle, balls):
+def paddle_collision(paddle, balls, hud):
     ballList = balls.sprites()
 
     for ball in ballList:
@@ -195,14 +208,15 @@ def paddle_collision(paddle, balls):
             ball.set_position((new_pos_x, new_pos_y))
             # Calculate new dirrection
             ball.set_direction(paddle.angle + PI + (paddle.angle - ball.get_direction()))
+            hud.reset()
 
-def tile_collision(tiles, balls, allsprites):
+def tile_collision(tiles, balls, allsprites, hud):
     ballList = balls.sprites()
     tileList = tiles.sprites()
 
     for ball in ballList:
         for tile in tileList:
-            while pygame.sprite.collide_rect(tile, ball):
+            if pygame.sprite.collide_rect(tile, ball):
                 if fire_time <= 0:
                     print "kajsdf"
                     # Get side of collision
@@ -233,9 +247,14 @@ def tile_collision(tiles, balls, allsprites):
                         ball.set_position((ballpos[X] - TILE_BUMP_DIST, ballpos[Y]))
                         ball.set_direction(PI - ball.get_direction())
                     # Kill block
+                if tile.get_value() == 1:
+                    hud.register()
+                elif tile.get_value() == 2:
+                    hud.register_x2()
+                elif tile.get_value() == 4:
+                    hud.register_x4()
                 tiles.remove(tile)
                 allsprites.remove(tile)
-                break
 
 def ball_powerup_collision(ball_powerups, balls, allsprites):
     ballList = balls.sprites()
@@ -504,6 +523,80 @@ class Spawner:
         loc = self.fire_powerup_spawns[pu_id][0]
         # Spawn fire powerup
         return Fire_Powerup(loc)
+
+class HUD(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface([HUD_WIDTH, HUD_HEIGHT])
+        self.image.fill(CYAN)
+        self.image.set_colorkey(CYAN)
+        self.rect = self.image.get_rect()
+
+        self.scorefont = pygame.font.Font(None, 24)
+        self.multfont = pygame.font.Font(None, 40)
+
+
+        self.score = 0
+        self.add = SCORE_BLOCK
+        self.addadd = SCORE_BLOCK 
+        self.multiplier = 1
+
+    def update(self):
+        self.image.fill(CYAN)
+        scoresurf = self.scorefont.render("Score " + str(self.score), 0, ORANGE)
+        if self.multiplier == 2:
+            multsurf = self.multfont.render("X" + str(self.multiplier), 0, BLUE)
+        elif self.multiplier == 4:
+            multsurf = self.multfont.render("X" + str(self.multiplier), 0, VIOLET)
+        elif self.multiplier > 4:
+            multsurf = self.multfont.render("X" + str(self.multiplier), 0, RED)
+        else:
+            multsurf = self.multfont.render("X" + str(self.multiplier), 0, GREEN)
+
+        self.image.blit(scoresurf, SCORE_TEXT_LOCATION)
+        self.image.blit(multsurf, MULT_TEXT_LOCATION)
+        image = self.image.convert_alpha()
+        
+        
+
+    def reset(self):
+        self.add = SCORE_BLOCK
+        self.addadd = SCORE_BLOCK
+        self.multiplier = 1
+
+    def register(self):
+        self.add += self.addadd
+        self.score += self.add
+
+    def register_x2(self):
+        if self.multiplier < 4:
+            self.multiplier = 2
+        self.addadd = self.multiplier * SCORE_BLOCK
+        self.register()
+
+    def register_x4(self):
+        self.multiplier = 4
+        self.addadd = self.multiplier * SCORE_BLOCK
+        self.register()
+
+    def get_score(self):
+        return self.score
+
+    def get_multiplier(self):
+        return self.multiplier
+
+    def get_image(self):
+        return self.image
+
+
+
+
+
+
+
+
+
+    
 
 
 
