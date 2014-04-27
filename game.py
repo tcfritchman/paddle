@@ -35,11 +35,32 @@ def main():
     # Create game objects
     clock = pygame.time.Clock()
     paddle = Paddle()
-    testball = Ball(CENTER, 0)
+    testball = Ball((200, 500), 3*PI/2)
+
+    testLevel = [[1,0,1,0,0,0,0,0,1,0,1,0,1,0,1]]
+    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
+    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
+    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
+    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
+    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
+    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
+    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
+    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
+    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
+    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
+    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
+    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
+    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
+    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
+
 
     # Sprite groups
     allsprites = pygame.sprite.Group((paddle, testball))
     balls = pygame.sprite.Group((testball))
+    tiles = pygame.sprite.Group()
+
+    draw_tiles(testLevel, tiles)
+    allsprites.add(tiles)
 
     global rotation
     rotation = 0.0
@@ -76,6 +97,16 @@ def main():
                     elif rotation < 0:
                         rotation += TWOPI
                     paddle.set_angle(rotation)
+                if event.key == K_r:
+                    testball.set_position(CENTER)
+                if event.key == K_w:
+                    testball.set_direction(3*PI/2)
+                if event.key == K_a:
+                    testball.set_direction(PI)
+                if event.key == K_s:
+                    testball.set_direction(PI/2)
+                if event.key == K_d:
+                    testball.set_direction(0)
 
             elif event.type == KEYUP:
                 pass
@@ -91,6 +122,7 @@ def main():
         allsprites.update()
 
         paddle_collision(paddle, balls)
+        tile_collision(tiles, balls, allsprites)
         
         screen.blit(background, (0, 0))
         #screen.blit(text, (10, 10))
@@ -103,52 +135,61 @@ def paddle_collision(paddle, balls):
     ballList = balls.sprites()
 
     for ball in ballList:
-        # is ball in range of paddle?
-        ball_pos = ball.get_position()
-        #center_dist_x = CENTER[X] - ball_pos[X]
-        #center_dist_y = CENTER[Y] - ball_pos[Y]
-        center_dist_x = ball_pos[X] - CENTER[X]
-        center_dist_y = ball_pos[Y] - CENTER[Y]
-        center_dist = math.sqrt(math.pow(center_dist_y, 2) + math.pow(center_dist_x, 2))
-        center_angle = math.atan2(center_dist_y, center_dist_x)
-        #print center_dist_x, center_dist_y
-        #print center_angle
-        print PADDLE_EDGE_ANGLE
-        """ 
         # When paddle collision - update ball direction.
-        # Ball bounces on tangent to paddle arc.
-        if pygame.sprite.collide_circle(paddle, ball) and center_dist >= PADDLE_INNER_RADIUS:
-            dif = rotation - ball.get_direction()
-            ball.set_direction((math.pi + ball.get_direction()) - (2 * dif))
-            # Update position to keep ball from being located inside paddle (bump)
-            bump_dist = center_dist - PADDLE_INNER_RADIUS + BALL_RADIUS
-            bump_dir = -math.atan2(center_dist_x, center_dist_y)
-            print bump_dist, bump_dir
+        if pygame.sprite.collide_mask(paddle, ball):
+            pos = ball.get_position()
+            # Move out of paddle
+            new_pos_x = pos[X] - (math.cos(paddle.angle) * PADDLE_BUMP_DIST)
+            new_pos_y = pos[Y] - (math.sin(paddle.angle) * PADDLE_BUMP_DIST)
+            ball.set_position((new_pos_x, new_pos_y))
+            # Calculate new dirrection
+            ball.set_direction(paddle.angle + PI + (paddle.angle - ball.get_direction()))
 
-        """
+def tile_collision(tiles, balls, allsprites):
+    ballList = balls.sprites()
+    tileList = tiles.sprites()
+
+    for ball in ballList:
+        for tile in tileList:
+            while pygame.sprite.collide_rect(tile, ball):
+                print "kajsdf"
+                # Get side of collision
+                ballpos = ball.get_position()
+                tilepos = tile.get_center()
+                dy = ballpos[Y] - tilepos[Y]
+                dx = ballpos[X] - tilepos[X]
+                theta = math.atan2(dy, dx)
+                if theta > -PI/4 and theta <= PI/4:
+                    print "RIGHT"
+                    # Right
+                    ball.set_position((ballpos[X] + TILE_BUMP_DIST, ballpos[Y]))
+                    ball.set_direction(PI - ball.get_direction())
+                elif theta > PI/4 and theta <= 3*PI/4:
+                    # Bottom
+                    # Bump down
+                    print "BOT"
+                    ball.set_position((ballpos[X], ballpos[Y] + TILE_BUMP_DIST))
+                    ball.set_direction(TWOPI - ball.get_direction())
+                elif theta > -3*PI/4 and theta <= -PI/4:
+                    # Top
+                    print "TOP"
+                    ball.set_position((ballpos[X], ballpos[Y] - TILE_BUMP_DIST))
+                    ball.set_direction(2*PI - ball.get_direction())
+                else:
+                    print "LEFT"
+                    # Left
+                    ball.set_position((ballpos[X] - TILE_BUMP_DIST, ballpos[Y]))
+                    ball.set_direction(PI - ball.get_direction())
+                # Kill block
+                tiles.remove(tile)
+                allsprites.remove(tile)
+                break
 
 
-        # When paddle collision - update ball direction.
-        if abs(center_angle - paddle.angle) < PADDLE_EDGE_ANGLE:
-            print "ANGLE"
-            if center_dist > (math.cos(paddle.angle - center_angle) / PADDLE_SWING_RADIUS):
-                # Collision!
-                print "COLLIDE!"
-                # Update posiition of ball to outside of collision area
-                bump_dist = (PADDLE_SWING_RADIUS - (PADDLE_HEIGHT/2) - BALL_RADIUS - 1) - center_dist
-                bump_dir = paddle.angle - PI
-                old_pos = ball.get_position()
-                new_pos_X = old_pos[X] + (math.cos(bump_dir)*bump_dist)
-                new_pos_Y = old_pos[Y] + (math.sin(bump_dir)*bump_dist)
-                ball.set_position((new_pos_X, new_pos_Y))
-                #print "bump", old_pos, ball.get_position()
-                # Update direction
-                new_dir = paddle.angle-PI-(paddle.angle-ball.get_direction())
-                #print "dir", ball.get_direction(), new_dir
-                ball.set_direction(new_dir)
 
-        else:
-            print "NOT ANGLE"
+
+
+
 
 
 
@@ -158,35 +199,7 @@ def paddle_collision(paddle, balls):
 # Paddle
 # Location on screen determined by it's 'angle' attribute. Angle
 # cooresponds to the angle of a line drawn from the center of the screen
-# to the center of the paddle circle.
-class oldPaddle(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface([PADDLE_WIDTH, PADDLE_HEIGHT])
-        self.image.set_colorkey(BLACK)
-        pygame.draw.circle(self.image, BLUE, [PADDLE_RADIUS, PADDLE_RADIUS], PADDLE_RADIUS)
-        image = self.image.convert_alpha()
-        self.rect = self.image.get_rect()
-        self.angle = 0 # Angle where paddle is located
-        self._set_position(self.angle)
-
-    def update(self):
-        self._set_position(self.angle)
-        self._draw_self(self.angle)
-
-    def _set_position(self, angle):
-        self.rect.center = [(CENTER[X] + PADDLE_SWING_RADIUS * math.cos(angle)), (CENTER[Y] + PADDLE_SWING_RADIUS * math.sin(angle))]
-
-    def _draw_self(self, angle):
-        # Draw base circle pygame.draw.circle(self.image, BLUE, [PADDLE_RADIUS, PADDLE_RADIUS], PADDLE_RADIUS)
-        # Calculate position of 'shadow' circle
-        shadow_pos = [int(PADDLE_RADIUS - (PADDLE_SWING_RADIUS * math.cos(angle))), int(PADDLE_RADIUS - (PADDLE_SWING_RADIUS * math.sin(angle)))]
-        # Draw shadow circle on top of base circle using alpha color
-        pygame.draw.circle(self.image, BLACK, shadow_pos, PADDLE_INNER_RADIUS)
-
-    def set_angle(self, angle):
-        self.angle = angle
-
+# to the center of the paddle.
 
 class Paddle(pygame.sprite.Sprite):
     def __init__(self):
@@ -278,6 +291,27 @@ class Tile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.pos = loc
 
+    def update(self):
+        self.rect.center = self.pos
+
+    def get_center(self):
+        return self.rect.center
+
+
+
+
+########## HELPER FUNCTIONS ###########
+def draw_tiles(level, tileGroup):
+    field_top_left = (CENTER[X] - ((TILE_WIDTH * FIELD_WIDTH) / 2), CENTER[Y] - ((TILE_HEIGHT * FIELD_HEIGHT) / 2))
+    
+    y = field_top_left[Y] 
+    for row in level:
+        x = field_top_left[X]
+        for tile in row:
+            if tile == 1:
+                tileGroup.add(Tile((x,y)))
+            x += TILE_WIDTH
+        y += TILE_HEIGHT
 
 
 
