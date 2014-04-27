@@ -42,6 +42,13 @@ TILE_BUMP_DIST = 5
 FIELD_WIDTH = 15
 FIELD_HEIGHT = 15
 
+# Ball Powerup
+BALL_POWERUP_TIME = 500
+
+# Fire Powerup
+FIRE_POWERUP_TIME = 500
+FIRE_POWERUP_EFFECT_TIME = 300
+
 
 # Color constants
 BLACK = Color(0, 0, 0)

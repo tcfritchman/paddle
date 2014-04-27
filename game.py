@@ -1,4 +1,4 @@
-import pygame, sys, os, math
+import pygame, sys, os, math, random
 from constants import *
 from utils import *
 from pygame.locals import *
@@ -13,6 +13,12 @@ def main():
     
     pygame.mouse.set_visible(False)
     pygame.event.set_grab(True)
+
+    global fire_time
+    fire_time = 0
+
+    global rotation
+    rotation = 0.0
     
     # Fill background
     background = pygame.Surface(screen.get_size())
@@ -32,40 +38,38 @@ def main():
     background.blit(foreground, (0, 0))
     pygame.display.flip()
 
+    testLevel = [[1,0,1,0,0,0,0,0,1,0,1,0,1,0,1]]
+    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
+    testLevel.append([1,0,12,0,0,0,1,0,1,0,1,0,1,0,1])
+    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
+    testLevel.append([1,0,20,0,0,0,1,0,1,0,1,0,1,0,1])
+    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
+    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
+    testLevel.append([1,14,0,0,0,0,1,1,0,1,0,1,0,1,0])
+    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
+    testLevel.append([1,0,0,0,10,0,1,1,0,1,0,1,0,1,0])
+    testLevel.append([1,0,15,0,0,0,1,0,1,0,1,0,1,0,1])
+    testLevel.append([1,0,0,0,21,0,1,1,0,1,0,1,0,1,0])
+    testLevel.append([1,0,21,0,0,0,1,0,1,0,1,0,1,0,1])
+    testLevel.append([1,0,0,16,0,0,1,1,0,1,0,1,0,1,0])
+    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
+
     # Create game objects
     clock = pygame.time.Clock()
     paddle = Paddle()
     testball = Ball((200, 500), 3*PI/2)
-
-    testLevel = [[1,0,1,0,0,0,0,0,1,0,1,0,1,0,1]]
-    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
-    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
-    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
-    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
-    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
-    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
-    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
-    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
-    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
-    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
-    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
-    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
-    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
-    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
+    spawner = Spawner(testLevel)
 
 
     # Sprite groups
     allsprites = pygame.sprite.Group((paddle, testball))
     balls = pygame.sprite.Group((testball))
     tiles = pygame.sprite.Group()
+    ball_powerups = pygame.sprite.Group()
+    fire_powerups = pygame.sprite.Group()
 
     draw_tiles(testLevel, tiles)
     allsprites.add(tiles)
-
-    global rotation
-    rotation = 0.0
-
-
 
     while 1:
         clock.tick(FPS)
@@ -107,6 +111,24 @@ def main():
                     testball.set_direction(PI/2)
                 if event.key == K_d:
                     testball.set_direction(0)
+                if event.key == K_1:
+                    ball = spawner.spawn_ball()
+                    if ball != None:
+                        balls.add(ball)
+                        allsprites.add(ball)
+                if event.key == K_2:
+                    bp = spawner.spawn_ball_powerup()
+                    if bp != None:
+                        ball_powerups.add(bp)
+                        allsprites.add(bp)
+                if event.key == K_3:
+                    fp = spawner.spawn_fire_powerup()
+                    if fp != None:
+                        fire_powerups.add(fp)
+                        allsprites.add(fp)
+                if event.key == K_i:
+                    print fire_time
+
 
             elif event.type == KEYUP:
                 pass
@@ -121,9 +143,22 @@ def main():
 
         allsprites.update()
 
+        # Handle Collisions
         paddle_collision(paddle, balls)
         tile_collision(tiles, balls, allsprites)
+        if ball_powerup_collision(ball_powerups, balls, allsprites):
+            ball = spawner.spawn_ball()
+            if ball != None:
+                balls.add(ball)
+                allsprites.add(ball)
+        if fire_powerup_collision(fire_powerups, balls, allsprites):
+            fire_time = FIRE_POWERUP_EFFECT_TIME
         
+        # Timeouts
+        if fire_time > 0:
+             fire_time -= 1
+        
+
         screen.blit(background, (0, 0))
         #screen.blit(text, (10, 10))
         allsprites.draw(screen)
@@ -152,46 +187,76 @@ def tile_collision(tiles, balls, allsprites):
     for ball in ballList:
         for tile in tileList:
             while pygame.sprite.collide_rect(tile, ball):
-                print "kajsdf"
-                # Get side of collision
-                ballpos = ball.get_position()
-                tilepos = tile.get_center()
-                dy = ballpos[Y] - tilepos[Y]
-                dx = ballpos[X] - tilepos[X]
-                theta = math.atan2(dy, dx)
-                if theta > -PI/4 and theta <= PI/4:
-                    print "RIGHT"
-                    # Right
-                    ball.set_position((ballpos[X] + TILE_BUMP_DIST, ballpos[Y]))
-                    ball.set_direction(PI - ball.get_direction())
-                elif theta > PI/4 and theta <= 3*PI/4:
-                    # Bottom
-                    # Bump down
-                    print "BOT"
-                    ball.set_position((ballpos[X], ballpos[Y] + TILE_BUMP_DIST))
-                    ball.set_direction(TWOPI - ball.get_direction())
-                elif theta > -3*PI/4 and theta <= -PI/4:
-                    # Top
-                    print "TOP"
-                    ball.set_position((ballpos[X], ballpos[Y] - TILE_BUMP_DIST))
-                    ball.set_direction(2*PI - ball.get_direction())
-                else:
-                    print "LEFT"
-                    # Left
-                    ball.set_position((ballpos[X] - TILE_BUMP_DIST, ballpos[Y]))
-                    ball.set_direction(PI - ball.get_direction())
-                # Kill block
+                if fire_time <= 0:
+                    print "kajsdf"
+                    # Get side of collision
+                    ballpos = ball.get_position()
+                    tilepos = tile.get_center()
+                    dy = ballpos[Y] - tilepos[Y]
+                    dx = ballpos[X] - tilepos[X]
+                    theta = math.atan2(dy, dx)
+                    if theta > -PI/4 and theta <= PI/4:
+                        print "RIGHT"
+                        # Right
+                        ball.set_position((ballpos[X] + TILE_BUMP_DIST, ballpos[Y]))
+                        ball.set_direction(PI - ball.get_direction())
+                    elif theta > PI/4 and theta <= 3*PI/4:
+                        # Bottom
+                        # Bump down
+                        print "BOT"
+                        ball.set_position((ballpos[X], ballpos[Y] + TILE_BUMP_DIST))
+                        ball.set_direction(TWOPI - ball.get_direction())
+                    elif theta > -3*PI/4 and theta <= -PI/4:
+                        # Top
+                        print "TOP"
+                        ball.set_position((ballpos[X], ballpos[Y] - TILE_BUMP_DIST))
+                        ball.set_direction(2*PI - ball.get_direction())
+                    else:
+                        print "LEFT"
+                        # Left
+                        ball.set_position((ballpos[X] - TILE_BUMP_DIST, ballpos[Y]))
+                        ball.set_direction(PI - ball.get_direction())
+                    # Kill block
                 tiles.remove(tile)
                 allsprites.remove(tile)
                 break
 
+def ball_powerup_collision(ball_powerups, balls, allsprites):
+    ballList = balls.sprites()
+    bpList = ball_powerups.sprites()
 
+    for ball in ballList:
+        for bp in bpList: 
+            # First check if powerup has timed out..
+            if bp.get_time() <= 0:
+                ball_powerups.remove(bp)
+                allsprites.remove(bp)
+                return False
+            if pygame.sprite.collide_rect(bp, ball):
+                # Kill powerup
+                ball_powerups.remove(bp)
+                allsprites.remove(bp)
+                return True
+    return False
 
+def fire_powerup_collision(fire_powerups, balls, allsprites):
+    ballList = balls.sprites()
+    fpList = fire_powerups.sprites()
 
-
-
-
-
+    for ball in ballList:
+        for fp in fpList: 
+            # First check if powerup has timed out..
+            if fp.get_time() <= 0:
+                fire_powerups.remove(fp)
+                allsprites.remove(fp)
+                return False
+            if pygame.sprite.collide_rect(fp, ball):
+                # Kill powerup
+                fire_powerups.remove(fp)
+                allsprites.remove(fp)
+                return True
+    return False
+        
 
 
 ############ GAME OBJECTS ###########
@@ -239,7 +304,6 @@ class Paddle(pygame.sprite.Sprite):
     def set_angle(self, angle):
         self.angle = angle
 
-
 # Ball
 # Updates own position based on it's own speed and direction attributes.
 class Ball(pygame.sprite.Sprite):
@@ -248,6 +312,8 @@ class Ball(pygame.sprite.Sprite):
         self.image = pygame.Surface([BALL_WIDTH, BALL_HEIGHT])
         self.image.set_colorkey(BLACK)
         pygame.draw.circle(self.image, RED, [BALL_RADIUS, BALL_RADIUS], BALL_RADIUS)
+        if fire_time > 1:
+            pygame.draw.circle(self.image, YELLOW, [BALL_RADIUS, BALL_RADIUS], BALL_RADIUS)
         image = self.image.convert_alpha()
         self.rect = self.image.get_rect()
         self.pos = start_loc
@@ -260,6 +326,12 @@ class Ball(pygame.sprite.Sprite):
         newy = self.pos[Y] + self.speed * math.sin(self.direction)
         self.pos = [newx, newy]
         self.rect.center = self.pos
+        if fire_time == FIRE_POWERUP_EFFECT_TIME-1:
+            pygame.draw.circle(self.image, YELLOW, [BALL_RADIUS, BALL_RADIUS], BALL_RADIUS)
+            print "ON"
+        elif fire_time == 1:
+            pygame.draw.circle(self.image, RED, [BALL_RADIUS, BALL_RADIUS], BALL_RADIUS)
+            print "OFF"
 
     def set_position(self, pos):
         self.pos = pos
@@ -296,6 +368,107 @@ class Tile(pygame.sprite.Sprite):
 
     def get_center(self):
         return self.rect.center
+
+class Ball_Powerup(pygame.sprite.Sprite):
+    def __init__(self, loc):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface([TILE_WIDTH, TILE_HEIGHT])
+        self.image.fill(YELLOW)
+        self.rect = self.image.get_rect()
+        self.pos = loc
+        self.time = BALL_POWERUP_TIME
+
+    def update(self):
+        self.rect.center = self.pos
+        self.time -= 1
+
+    def get_center(self):
+        return self.rect.center
+
+    def get_time(self):
+        return self.time
+
+class Fire_Powerup(pygame.sprite.Sprite):
+    def __init__(self, loc):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface([TILE_WIDTH, TILE_HEIGHT])
+        self.image.fill(ORANGE)
+        self.rect = self.image.get_rect()
+        self.pos = loc
+        self.time = FIRE_POWERUP_TIME 
+
+    def update(self):
+        self.rect.center = self.pos
+        self.time -= 1
+
+    def get_center(self):
+        return self.rect.center
+
+    def get_time(self):
+        return self.time
+
+class Spawner:
+    def __init__(self, level):
+        self.level = level
+        self.ball_spawns = self._get_ball_locations(self.level)
+        self.ball_powerup_spawns, self.fire_powerup_spawns = self._get_powerup_locations(self.level)
+
+    def _get_ball_locations(self, level):
+        locs = []
+        field_top_left = (CENTER[X] - ((TILE_WIDTH * FIELD_WIDTH) / 2), CENTER[Y] - ((TILE_HEIGHT * FIELD_HEIGHT) / 2))
+        
+        y = field_top_left[Y] 
+        for row in level:
+            x = field_top_left[X]
+            for tile in row:
+                if tile >= 10 and tile <= 17:
+                    locs.append(((x,y),tile))
+                x += TILE_WIDTH
+            y += TILE_HEIGHT
+        return locs
+
+    def _get_powerup_locations(self, level):
+        ball_locs = []
+        fire_locs = []
+        field_top_left = (CENTER[X] - ((TILE_WIDTH * FIELD_WIDTH) / 2), CENTER[Y] - ((TILE_HEIGHT * FIELD_HEIGHT) / 2))
+        
+        y = field_top_left[Y] 
+        for row in level:
+            x = field_top_left[X]
+            for tile in row:
+                if tile == 20:
+                    ball_locs.append(((x,y),tile))
+                elif tile == 21:
+                    fire_locs.append(((x,y),tile))
+                x += TILE_WIDTH
+            y += TILE_HEIGHT
+        return ball_locs, fire_locs
+
+    def spawn_ball(self):
+        if len(self.ball_spawns) < 1:
+            return None
+        ball_id = random.randint(0, len(self.ball_spawns) - 1)
+        loc = self.ball_spawns[ball_id][0]
+        direction = (self.ball_spawns[ball_id][1] - 10)  * (PI/4)
+        return Ball(loc, direction)
+
+    def spawn_ball_powerup(self):
+        if len(self.ball_powerup_spawns) < 1:
+            return None
+        pu_id = random.randint(0, len(self.ball_powerup_spawns) - 1)
+        loc = self.ball_powerup_spawns[pu_id][0]
+        # Spawn ball powerup
+        return Ball_Powerup(loc)
+        
+    def spawn_fire_powerup(self):
+        if len(self.fire_powerup_spawns) < 1:
+            return None
+        pu_id = random.randint(0, len(self.fire_powerup_spawns) - 1)
+        loc = self.fire_powerup_spawns[pu_id][0]
+        # Spawn fire powerup
+        return Fire_Powerup(loc)
+
+
 
 
 
