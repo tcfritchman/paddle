@@ -54,6 +54,53 @@ def menu(screen):
         level_menu_surf.blit(textsurf, (MENU_TEXT_LOCATION[X], MENU_TEXT_LOCATION[Y] + line_space))
         line_space += MENU_TEXT_SPACING
 
+
+    # Create how to play menu text surf
+    menu_font = pygame.font.Font(None, 24)
+    howto_menu_surf = pygame.Surface(screen.get_size())
+    howto_menu_surf.set_colorkey(BLACK)
+    howto_menu_text = ["Controls:"]
+    howto_menu_text.append("Mouse: Rotate paddle")
+    howto_menu_text.append("ESC: Return to menu")
+    howto_menu_text.append("Q: Quit game")
+    howto_menu_text.append("")
+    howto_menu_text.append("Cheats:")
+    howto_menu_text.append("1: Spawn ball")
+    howto_menu_text.append("2: Spawn ball powerup")
+    howto_menu_text.append("3: Spawn flame powerup")
+    howto_menu_text.append("")
+    howto_menu_text.append("")
+    howto_menu_text.append("")
+    howto_menu_text.append("")
+    howto_menu_text.append("     ESC: Back")
+
+    line_space = 0
+    for text in howto_menu_text:
+        textsurf = menu_font.render(text, 0, WHITE)
+        howto_menu_surf.blit(textsurf, (50, 25 + line_space))
+        line_space += MENU_TEXT_SPACING
+
+    howto_menu_text = ["How to play:"]
+    howto_menu_text.append("Use your paddle to keep")
+    howto_menu_text.append("the ball within the circular")
+    howto_menu_text.append("bounds. Powerups will aid you")
+    howto_menu_text.append("in your quest to destroy all the")
+    howto_menu_text.append("blocks on the screen and to get")
+    howto_menu_text.append("the highest score! The more")
+    howto_menu_text.append("blocks you hit before the ball")
+    howto_menu_text.append("hits the paddle, the faster ")
+    howto_menu_text.append("your score increases. Get blue")
+    howto_menu_text.append("and purple blocks to get an even")
+    howto_menu_text.append("higher combo multiplier. Don't")
+    howto_menu_text.append("let the ball leave the playing")
+    howto_menu_text.append("field or else game over!!")
+
+    line_space = 0
+    for text in howto_menu_text:
+        textsurf = menu_font.render(text, 0, WHITE)
+        howto_menu_surf.blit(textsurf, (300, 25 + line_space))
+        line_space += MENU_TEXT_SPACING
+
     # Blit text to screen
     clock = pygame.time.Clock()
     menu = "main"
@@ -75,22 +122,45 @@ def menu(screen):
                 if event.key == K_F1:
                     if menu == "main":
                         menu = "level"
+                    elif menu == "level":
+                        play_level(screen, 1)
                 if event.key == K_F2:
                     if menu == "main":
                         menu = "howto"
+                    elif menu == "level":
+                        play_level(screen, 2)
                 if event.key == K_F3:
                     if menu == "main":
                         menu = "ack"
+                if event.key == K_F4:
+                    pass
 
         screen.blit(background, (0, 0))
         if menu == "main":
             screen.blit(main_menu_surf, (0,0))
         elif menu == "level":
             screen.blit(level_menu_surf, (0,0))
+        elif menu == "howto":
+            screen.blit(howto_menu_surf, (0,0))
+        elif menu == "ack":
+            screen.blit(ack_menu_surf, (0,0))
 
         pygame.display.flip()
 
-def game(screen):
+def play_level(screen, level):
+    level_list = [levels.L1, levels.L2]
+
+    i = 1
+    for l in level_list:
+        if i < level:
+            i += 1
+            continue
+        else:
+            if not game(screen, l):
+                break
+
+
+def game(screen, level):
     global fire_time
     fire_time = 0
 
@@ -133,7 +203,7 @@ def game(screen):
     testLevel.append([1,0,0,16,0,0,1,1,0,1,0,1,0,1,0])
     testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
 
-    testLevel = levels.L2
+    testLevel = level
 
     # Create game objects
     clock = pygame.time.Clock()
@@ -161,7 +231,7 @@ def game(screen):
             if event.type == KEYDOWN:
                 # FOR TESTING
                 if event.key == K_ESCAPE:
-                    main()
+                    return True
                 if event.key == K_f:
                     pygame.display.toggle_fullscreen()
                 if event.key == K_q:
