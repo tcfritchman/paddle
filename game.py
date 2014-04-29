@@ -8,7 +8,6 @@ from utils import *
 from pygame.locals import *
 import levels
 
-
 def main():
     # Initialize the screen
     print "Initializing..."
@@ -20,6 +19,78 @@ def main():
     pygame.mouse.set_visible(False)
     pygame.event.set_grab(True)
 
+    menu(screen)
+    game(screen)
+
+def menu(screen):
+    # Fill background
+    background = pygame.Surface(screen.get_size())
+    background = background.convert()
+    background.fill((GREEN))
+
+    # Blit to screen
+    screen.blit(background, (0, 0))
+    pygame.display.flip()
+
+    menu_font = pygame.font.Font(None, 32)
+
+    # Create Main menu text surf
+    main_menu_surf = pygame.Surface(screen.get_size())
+    main_menu_surf.set_colorkey(BLACK)
+    main_menu_text = ["[F1] Play Game", "[F2] How To Play", "[F3] Acknowledgements", "[q] Quit"]
+    line_space = 0
+    for text in main_menu_text:
+        textsurf = menu_font.render(text, 0, WHITE)
+        main_menu_surf.blit(textsurf, (MENU_TEXT_LOCATION[X], MENU_TEXT_LOCATION[Y] + line_space))
+        line_space += MENU_TEXT_SPACING
+
+    # Create level menu text surf
+    level_menu_surf = pygame.Surface(screen.get_size())
+    level_menu_surf.set_colorkey(BLACK)
+    level_menu_text = ["[F1] Level 1", "[F2] Level 2", "[F3] Level 3", "[F4] Level 4", "[ESC] Back"]
+    line_space = 0
+    for text in level_menu_text:
+        textsurf = menu_font.render(text, 0, WHITE)
+        level_menu_surf.blit(textsurf, (MENU_TEXT_LOCATION[X], MENU_TEXT_LOCATION[Y] + line_space))
+        line_space += MENU_TEXT_SPACING
+
+    # Blit text to screen
+    clock = pygame.time.Clock()
+    menu = "main"
+
+    while 1:
+        clock.tick(FPS)
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                return
+            if event.type == KEYDOWN:
+                if event.key == K_f:
+                    pygame.display.toggle_fullscreen()
+                if event.key == K_q:
+                    pygame.font.quit()
+                    pygame.quit()
+                if event.key == K_ESCAPE:
+                    menu = "main"
+                if event.key == K_F1:
+                    if menu == "main":
+                        menu = "level"
+                if event.key == K_F2:
+                    if menu == "main":
+                        menu = "howto"
+                if event.key == K_F3:
+                    if menu == "main":
+                        menu = "ack"
+
+        screen.blit(background, (0, 0))
+        if menu == "main":
+            screen.blit(main_menu_surf, (0,0))
+        elif menu == "level":
+            screen.blit(level_menu_surf, (0,0))
+
+        pygame.display.flip()
+
+def game(screen):
     global fire_time
     fire_time = 0
 
