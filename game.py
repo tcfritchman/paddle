@@ -8,7 +8,6 @@ from utils import *
 from pygame.locals import *
 import levels
 
-
 def main():
     # Initialize the screen
     print "Initializing..."
@@ -16,11 +15,152 @@ def main():
     screen = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     pygame.display.set_caption("Paddle")
     pygame.font.init()
-
     
     pygame.mouse.set_visible(False)
     pygame.event.set_grab(True)
 
+    menu(screen)
+    game(screen)
+
+def menu(screen):
+    # Fill background
+    background = pygame.Surface(screen.get_size())
+    background = background.convert()
+    background.fill((GREEN))
+
+    # Blit to screen
+    screen.blit(background, (0, 0))
+    pygame.display.flip()
+
+    menu_font = pygame.font.Font(None, 32)
+
+    # Create Main menu text surf
+    main_menu_surf = pygame.Surface(screen.get_size())
+    main_menu_surf.set_colorkey(BLACK)
+    main_menu_text = ["[F1] Play Game", "[F2] How To Play", "[F3] Acknowledgements", "[q] Quit"]
+    line_space = 0
+    for text in main_menu_text:
+        textsurf = menu_font.render(text, 0, WHITE)
+        main_menu_surf.blit(textsurf, (MENU_TEXT_LOCATION[X], MENU_TEXT_LOCATION[Y] + line_space))
+        line_space += MENU_TEXT_SPACING
+
+    # Create level menu text surf
+    level_menu_surf = pygame.Surface(screen.get_size())
+    level_menu_surf.set_colorkey(BLACK)
+    level_menu_text = ["[F1] Level 1", "[F2] Level 2", "[F3] Level 3", "[F4] Level 4", "[ESC] Back"]
+    line_space = 0
+    for text in level_menu_text:
+        textsurf = menu_font.render(text, 0, WHITE)
+        level_menu_surf.blit(textsurf, (MENU_TEXT_LOCATION[X], MENU_TEXT_LOCATION[Y] + line_space))
+        line_space += MENU_TEXT_SPACING
+
+
+    # Create how to play menu text surf
+    menu_font = pygame.font.Font(None, 24)
+    howto_menu_surf = pygame.Surface(screen.get_size())
+    howto_menu_surf.set_colorkey(BLACK)
+    howto_menu_text = ["Controls:"]
+    howto_menu_text.append("Mouse: Rotate paddle")
+    howto_menu_text.append("ESC: Return to menu")
+    howto_menu_text.append("Q: Quit game")
+    howto_menu_text.append("F: Fullscreen")
+    howto_menu_text.append("")
+    howto_menu_text.append("Cheats:")
+    howto_menu_text.append("1: Spawn ball")
+    howto_menu_text.append("2: Spawn ball powerup")
+    howto_menu_text.append("3: Spawn flame powerup")
+    howto_menu_text.append("")
+    howto_menu_text.append("")
+    howto_menu_text.append("")
+    howto_menu_text.append("     ESC: Back")
+
+    line_space = 0
+    for text in howto_menu_text:
+        textsurf = menu_font.render(text, 0, WHITE)
+        howto_menu_surf.blit(textsurf, (50, 25 + line_space))
+        line_space += MENU_TEXT_SPACING
+
+    howto_menu_text = ["How to play:"]
+    howto_menu_text.append("Use your paddle to keep")
+    howto_menu_text.append("the ball within the circular")
+    howto_menu_text.append("bounds. Powerups will aid you")
+    howto_menu_text.append("in your quest to destroy all the")
+    howto_menu_text.append("blocks on the screen and to get")
+    howto_menu_text.append("the highest score! The more")
+    howto_menu_text.append("blocks you hit before the ball")
+    howto_menu_text.append("hits the paddle, the faster ")
+    howto_menu_text.append("your score increases. Get blue")
+    howto_menu_text.append("and purple blocks to get an even")
+    howto_menu_text.append("higher combo multiplier. Don't")
+    howto_menu_text.append("let the ball leave the playing")
+    howto_menu_text.append("field or else game over!!")
+
+    line_space = 0
+    for text in howto_menu_text:
+        textsurf = menu_font.render(text, 0, WHITE)
+        howto_menu_surf.blit(textsurf, (300, 25 + line_space))
+        line_space += 28
+
+    # Blit text to screen
+    clock = pygame.time.Clock()
+    menu = "main"
+
+    while 1:
+        clock.tick(FPS)
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                return
+            if event.type == KEYDOWN:
+                if event.key == K_f:
+                    pygame.display.toggle_fullscreen()
+                if event.key == K_q:
+                    pygame.font.quit()
+                    pygame.quit()
+                if event.key == K_ESCAPE:
+                    menu = "main"
+                if event.key == K_F1:
+                    if menu == "main":
+                        menu = "level"
+                    elif menu == "level":
+                        play_level(screen, 1)
+                if event.key == K_F2:
+                    if menu == "main":
+                        menu = "howto"
+                    elif menu == "level":
+                        play_level(screen, 2)
+                if event.key == K_F3:
+                    if menu == "main":
+                        menu = "ack"
+                if event.key == K_F4:
+                    pass
+
+        screen.blit(background, (0, 0))
+        if menu == "main":
+            screen.blit(main_menu_surf, (0,0))
+        elif menu == "level":
+            screen.blit(level_menu_surf, (0,0))
+        elif menu == "howto":
+            screen.blit(howto_menu_surf, (0,0))
+        elif menu == "ack":
+            screen.blit(ack_menu_surf, (0,0))
+
+        pygame.display.flip()
+
+def play_level(screen, level):
+    level_list = [levels.L1, levels.L2]
+
+    i = 1
+    for l in level_list:
+        if i < level:
+            i += 1
+            continue
+        else:
+            if not game(screen, l):
+                break
+
+
+def game(screen, level):
     global fire_time
     fire_time = 0
 
@@ -42,7 +182,6 @@ def main():
     pygame.draw.circle(foreground, BLUE, CENTER, FOREGROUND_RADIUS)
     foreground = foreground.convert_alpha()
     
-
     # Blit to screen
     screen.blit(background, (0, 0))
     background.blit(foreground, (0, 0))
@@ -64,7 +203,7 @@ def main():
     testLevel.append([1,0,0,16,0,0,1,1,0,1,0,1,0,1,0])
     testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
 
-    testLevel = levels.L1
+    testLevel = level
 
     # Create game objects
     clock = pygame.time.Clock()
@@ -72,7 +211,6 @@ def main():
     paddle = Paddle()
     testball = Ball(BALL_INITIAL_POSITION, 0)
     spawner = Spawner(testLevel)
-
 
     # Sprite groups
     allsprites = pygame.sprite.Group((paddle, testball))
@@ -93,7 +231,7 @@ def main():
             if event.type == KEYDOWN:
                 # FOR TESTING
                 if event.key == K_ESCAPE:
-                    main()
+                    return False
                 if event.key == K_f:
                     pygame.display.toggle_fullscreen()
                 if event.key == K_q:
@@ -192,8 +330,12 @@ def main():
         screen.blit(hud.get_image(), HUD_LOCATION)
         pygame.display.flip()
 
+        if len(tiles.sprites()) < 1:
+            print "YOU WIN!"
+            return True
         if len(balls.sprites()) < 1:
             print "GAME OVER"
+            return False
 
 def paddle_collision(paddle, balls, hud):
     ballList = balls.sprites()
@@ -218,7 +360,6 @@ def tile_collision(tiles, balls, allsprites, hud):
         for tile in tileList:
             if pygame.sprite.collide_rect(tile, ball):
                 if fire_time <= 0:
-                    print "kajsdf"
                     # Get side of collision
                     ballpos = ball.get_position()
                     tilepos = tile.get_center()
@@ -226,23 +367,19 @@ def tile_collision(tiles, balls, allsprites, hud):
                     dx = ballpos[X] - tilepos[X]
                     theta = math.atan2(dy, dx)
                     if theta > -PI/4 and theta <= PI/4:
-                        print "RIGHT"
                         # Right
                         ball.set_position((ballpos[X] + TILE_BUMP_DIST, ballpos[Y]))
                         ball.set_direction(PI - ball.get_direction())
                     elif theta > PI/4 and theta <= 3*PI/4:
                         # Bottom
                         # Bump down
-                        print "BOT"
                         ball.set_position((ballpos[X], ballpos[Y] + TILE_BUMP_DIST))
                         ball.set_direction(TWOPI - ball.get_direction())
                     elif theta > -3*PI/4 and theta <= -PI/4:
                         # Top
-                        print "TOP"
                         ball.set_position((ballpos[X], ballpos[Y] - TILE_BUMP_DIST))
                         ball.set_direction(2*PI - ball.get_direction())
                     else:
-                        print "LEFT"
                         # Left
                         ball.set_position((ballpos[X] - TILE_BUMP_DIST, ballpos[Y]))
                         ball.set_direction(PI - ball.get_direction())
@@ -298,11 +435,8 @@ def foreground_collision(balls, allsprites):
         pos = ball.get_position()
         if math.sqrt(pow(pos[X] - CENTER[X], 2) + pow(pos[Y] - CENTER[Y], 2)) > FOREGROUND_RADIUS:
             # WE're outside the boundary circle
-            print "BYE!"
             balls.remove(ball)
             allsprites.remove(ball)
-
-
 
 ############ GAME OBJECTS ###########
 
@@ -535,7 +669,6 @@ class HUD(pygame.sprite.Sprite):
         self.scorefont = pygame.font.Font(None, 24)
         self.multfont = pygame.font.Font(None, 40)
 
-
         self.score = 0
         self.add = SCORE_BLOCK
         self.addadd = SCORE_BLOCK 
@@ -556,8 +689,6 @@ class HUD(pygame.sprite.Sprite):
         self.image.blit(scoresurf, SCORE_TEXT_LOCATION)
         self.image.blit(multsurf, MULT_TEXT_LOCATION)
         image = self.image.convert_alpha()
-        
-        
 
     def reset(self):
         self.add = SCORE_BLOCK
@@ -588,21 +719,6 @@ class HUD(pygame.sprite.Sprite):
     def get_image(self):
         return self.image
 
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
 ########## HELPER FUNCTIONS ###########
 def draw_tiles(level, tileGroup):
     field_top_left = (CENTER[X] - ((TILE_WIDTH * FIELD_WIDTH) / 2), CENTER[Y] - ((TILE_HEIGHT * FIELD_HEIGHT) / 2))
@@ -615,8 +731,6 @@ def draw_tiles(level, tileGroup):
                 tileGroup.add(Tile((x,y), tile))
             x += TILE_WIDTH
         y += TILE_HEIGHT
-
-
 
 if __name__ == '__main__':
     try:
