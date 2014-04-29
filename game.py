@@ -16,7 +16,6 @@ def main():
     screen = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     pygame.display.set_caption("Paddle")
     pygame.font.init()
-
     
     pygame.mouse.set_visible(False)
     pygame.event.set_grab(True)
@@ -42,7 +41,6 @@ def main():
     pygame.draw.circle(foreground, BLUE, CENTER, FOREGROUND_RADIUS)
     foreground = foreground.convert_alpha()
     
-
     # Blit to screen
     screen.blit(background, (0, 0))
     background.blit(foreground, (0, 0))
@@ -64,7 +62,7 @@ def main():
     testLevel.append([1,0,0,16,0,0,1,1,0,1,0,1,0,1,0])
     testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
 
-    testLevel = levels.L1
+    testLevel = levels.L2
 
     # Create game objects
     clock = pygame.time.Clock()
@@ -72,7 +70,6 @@ def main():
     paddle = Paddle()
     testball = Ball(BALL_INITIAL_POSITION, 0)
     spawner = Spawner(testLevel)
-
 
     # Sprite groups
     allsprites = pygame.sprite.Group((paddle, testball))
@@ -301,8 +298,6 @@ def foreground_collision(balls, allsprites):
             print "BYE!"
             balls.remove(ball)
             allsprites.remove(ball)
-
-
 
 ############ GAME OBJECTS ###########
 
@@ -535,7 +530,6 @@ class HUD(pygame.sprite.Sprite):
         self.scorefont = pygame.font.Font(None, 24)
         self.multfont = pygame.font.Font(None, 40)
 
-
         self.score = 0
         self.add = SCORE_BLOCK
         self.addadd = SCORE_BLOCK 
@@ -556,8 +550,6 @@ class HUD(pygame.sprite.Sprite):
         self.image.blit(scoresurf, SCORE_TEXT_LOCATION)
         self.image.blit(multsurf, MULT_TEXT_LOCATION)
         image = self.image.convert_alpha()
-        
-        
 
     def reset(self):
         self.add = SCORE_BLOCK
@@ -588,21 +580,6 @@ class HUD(pygame.sprite.Sprite):
     def get_image(self):
         return self.image
 
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
 ########## HELPER FUNCTIONS ###########
 def draw_tiles(level, tileGroup):
     field_top_left = (CENTER[X] - ((TILE_WIDTH * FIELD_WIDTH) / 2), CENTER[Y] - ((TILE_HEIGHT * FIELD_HEIGHT) / 2))
@@ -615,8 +592,6 @@ def draw_tiles(level, tileGroup):
                 tileGroup.add(Tile((x,y), tile))
             x += TILE_WIDTH
         y += TILE_HEIGHT
-
-
 
 if __name__ == '__main__':
     try:
