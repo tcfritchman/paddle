@@ -63,12 +63,12 @@ def menu(screen):
     howto_menu_text.append("Mouse: Rotate paddle")
     howto_menu_text.append("ESC: Return to menu")
     howto_menu_text.append("Q: Quit game")
+    howto_menu_text.append("F: Fullscreen")
     howto_menu_text.append("")
     howto_menu_text.append("Cheats:")
     howto_menu_text.append("1: Spawn ball")
     howto_menu_text.append("2: Spawn ball powerup")
     howto_menu_text.append("3: Spawn flame powerup")
-    howto_menu_text.append("")
     howto_menu_text.append("")
     howto_menu_text.append("")
     howto_menu_text.append("")
@@ -99,7 +99,7 @@ def menu(screen):
     for text in howto_menu_text:
         textsurf = menu_font.render(text, 0, WHITE)
         howto_menu_surf.blit(textsurf, (300, 25 + line_space))
-        line_space += MENU_TEXT_SPACING
+        line_space += 28
 
     # Blit text to screen
     clock = pygame.time.Clock()
@@ -231,7 +231,7 @@ def game(screen, level):
             if event.type == KEYDOWN:
                 # FOR TESTING
                 if event.key == K_ESCAPE:
-                    return True
+                    return False
                 if event.key == K_f:
                     pygame.display.toggle_fullscreen()
                 if event.key == K_q:
@@ -330,8 +330,12 @@ def game(screen, level):
         screen.blit(hud.get_image(), HUD_LOCATION)
         pygame.display.flip()
 
+        if len(tiles.sprites()) < 1:
+            print "YOU WIN!"
+            return True
         if len(balls.sprites()) < 1:
             print "GAME OVER"
+            return False
 
 def paddle_collision(paddle, balls, hud):
     ballList = balls.sprites()
@@ -356,7 +360,6 @@ def tile_collision(tiles, balls, allsprites, hud):
         for tile in tileList:
             if pygame.sprite.collide_rect(tile, ball):
                 if fire_time <= 0:
-                    print "kajsdf"
                     # Get side of collision
                     ballpos = ball.get_position()
                     tilepos = tile.get_center()
@@ -364,23 +367,19 @@ def tile_collision(tiles, balls, allsprites, hud):
                     dx = ballpos[X] - tilepos[X]
                     theta = math.atan2(dy, dx)
                     if theta > -PI/4 and theta <= PI/4:
-                        print "RIGHT"
                         # Right
                         ball.set_position((ballpos[X] + TILE_BUMP_DIST, ballpos[Y]))
                         ball.set_direction(PI - ball.get_direction())
                     elif theta > PI/4 and theta <= 3*PI/4:
                         # Bottom
                         # Bump down
-                        print "BOT"
                         ball.set_position((ballpos[X], ballpos[Y] + TILE_BUMP_DIST))
                         ball.set_direction(TWOPI - ball.get_direction())
                     elif theta > -3*PI/4 and theta <= -PI/4:
                         # Top
-                        print "TOP"
                         ball.set_position((ballpos[X], ballpos[Y] - TILE_BUMP_DIST))
                         ball.set_direction(2*PI - ball.get_direction())
                     else:
-                        print "LEFT"
                         # Left
                         ball.set_position((ballpos[X] - TILE_BUMP_DIST, ballpos[Y]))
                         ball.set_direction(PI - ball.get_direction())
@@ -436,7 +435,6 @@ def foreground_collision(balls, allsprites):
         pos = ball.get_position()
         if math.sqrt(pow(pos[X] - CENTER[X], 2) + pow(pos[Y] - CENTER[Y], 2)) > FOREGROUND_RADIUS:
             # WE're outside the boundary circle
-            print "BYE!"
             balls.remove(ball)
             allsprites.remove(ball)
 
