@@ -2,7 +2,7 @@
 # game.py
 # Thomas Fritchman
 
-import pygame, sys, os, math, random
+import pygame, sys, os, math, random, time
 from constants import *
 from utils import *
 from pygame.locals import *
@@ -22,144 +22,6 @@ def main():
     menu(screen)
     game(screen)
 
-def menu(screen):
-    # Fill background
-    background = pygame.Surface(screen.get_size())
-    background = background.convert()
-    background.fill((GREEN))
-
-    # Blit to screen
-    screen.blit(background, (0, 0))
-    pygame.display.flip()
-
-    menu_font = pygame.font.Font(None, 32)
-
-    # Create Main menu text surf
-    main_menu_surf = pygame.Surface(screen.get_size())
-    main_menu_surf.set_colorkey(BLACK)
-    main_menu_text = ["[F1] Play Game", "[F2] How To Play", "[F3] Acknowledgements", "[q] Quit"]
-    line_space = 0
-    for text in main_menu_text:
-        textsurf = menu_font.render(text, 0, WHITE)
-        main_menu_surf.blit(textsurf, (MENU_TEXT_LOCATION[X], MENU_TEXT_LOCATION[Y] + line_space))
-        line_space += MENU_TEXT_SPACING
-
-    # Create level menu text surf
-    level_menu_surf = pygame.Surface(screen.get_size())
-    level_menu_surf.set_colorkey(BLACK)
-    level_menu_text = ["[F1] Level 1", "[F2] Level 2", "[F3] Level 3", "[F4] Level 4", "[ESC] Back"]
-    line_space = 0
-    for text in level_menu_text:
-        textsurf = menu_font.render(text, 0, WHITE)
-        level_menu_surf.blit(textsurf, (MENU_TEXT_LOCATION[X], MENU_TEXT_LOCATION[Y] + line_space))
-        line_space += MENU_TEXT_SPACING
-
-
-    # Create how to play menu text surf
-    menu_font = pygame.font.Font(None, 24)
-    howto_menu_surf = pygame.Surface(screen.get_size())
-    howto_menu_surf.set_colorkey(BLACK)
-    howto_menu_text = ["Controls:"]
-    howto_menu_text.append("Mouse: Rotate paddle")
-    howto_menu_text.append("ESC: Return to menu")
-    howto_menu_text.append("Q: Quit game")
-    howto_menu_text.append("F: Fullscreen")
-    howto_menu_text.append("")
-    howto_menu_text.append("Cheats:")
-    howto_menu_text.append("1: Spawn ball")
-    howto_menu_text.append("2: Spawn ball powerup")
-    howto_menu_text.append("3: Spawn flame powerup")
-    howto_menu_text.append("")
-    howto_menu_text.append("")
-    howto_menu_text.append("")
-    howto_menu_text.append("     ESC: Back")
-
-    line_space = 0
-    for text in howto_menu_text:
-        textsurf = menu_font.render(text, 0, WHITE)
-        howto_menu_surf.blit(textsurf, (50, 25 + line_space))
-        line_space += MENU_TEXT_SPACING
-
-    howto_menu_text = ["How to play:"]
-    howto_menu_text.append("Use your paddle to keep")
-    howto_menu_text.append("the ball within the circular")
-    howto_menu_text.append("bounds. Powerups will aid you")
-    howto_menu_text.append("in your quest to destroy all the")
-    howto_menu_text.append("blocks on the screen and to get")
-    howto_menu_text.append("the highest score! The more")
-    howto_menu_text.append("blocks you hit before the ball")
-    howto_menu_text.append("hits the paddle, the faster ")
-    howto_menu_text.append("your score increases. Get blue")
-    howto_menu_text.append("and purple blocks to get an even")
-    howto_menu_text.append("higher combo multiplier. Don't")
-    howto_menu_text.append("let the ball leave the playing")
-    howto_menu_text.append("field or else game over!!")
-
-    line_space = 0
-    for text in howto_menu_text:
-        textsurf = menu_font.render(text, 0, WHITE)
-        howto_menu_surf.blit(textsurf, (300, 25 + line_space))
-        line_space += 28
-
-    # Blit text to screen
-    clock = pygame.time.Clock()
-    menu = "main"
-
-    while 1:
-        clock.tick(FPS)
-
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                return
-            if event.type == KEYDOWN:
-                if event.key == K_f:
-                    pygame.display.toggle_fullscreen()
-                if event.key == K_q:
-                    pygame.font.quit()
-                    pygame.quit()
-                if event.key == K_ESCAPE:
-                    menu = "main"
-                if event.key == K_F1:
-                    if menu == "main":
-                        menu = "level"
-                    elif menu == "level":
-                        play_level(screen, 1)
-                if event.key == K_F2:
-                    if menu == "main":
-                        menu = "howto"
-                    elif menu == "level":
-                        play_level(screen, 2)
-                if event.key == K_F3:
-                    if menu == "main":
-                        menu = "ack"
-                if event.key == K_F4:
-                    pass
-
-        screen.blit(background, (0, 0))
-        if menu == "main":
-            screen.blit(main_menu_surf, (0,0))
-        elif menu == "level":
-            screen.blit(level_menu_surf, (0,0))
-        elif menu == "howto":
-            screen.blit(howto_menu_surf, (0,0))
-        elif menu == "ack":
-            screen.blit(ack_menu_surf, (0,0))
-
-        pygame.display.flip()
-
-def play_level(screen, level):
-    level_list = [levels.L1, levels.L2]
-
-    i = 1
-    for l in level_list:
-        if i < level:
-            i += 1
-            continue
-        else:
-            if not game(screen, l):
-                break
-
-
 def game(screen, level):
     global fire_time
     fire_time = 0
@@ -169,11 +31,29 @@ def game(screen, level):
 
     global ball_count
     ball_count = 1
+
+    global invincible
+    invincible = False
+
+    if level == levels.L1:
+        background, butt = load_image("l1_background.png", None)    
+        song = load_sound("l1_music.ogg")
+    elif level == levels.L2:
+        background, butt = load_image("l2_background.png", None)    
+        song = load_sound("l2_music.ogg")
+    elif level == levels.L3:
+        background, butt = load_image("l3_background.png", None)    
+        song = load_sound("l3_music.ogg")
+    elif level == levels.L4:
+        background, butt = load_image("l4_background.png", None)    
+        song = load_sound("l4_music.ogg")
+
+    hi_score = get_hi_score(level)
     
-    # Fill background
-    background = pygame.Surface(screen.get_size())
-    background = background.convert()
-    background.fill((150,200,255))
+    try:
+        song.play(100)
+    except:
+        pass
 
     # Foreground boundary
     foreground = pygame.Surface(screen.get_size())
@@ -187,27 +67,11 @@ def game(screen, level):
     background.blit(foreground, (0, 0))
     pygame.display.flip()
 
-    testLevel = [[1,0,1,0,0,0,0,0,1,0,1,0,1,0,1]]
-    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
-    testLevel.append([1,0,12,0,0,0,1,0,1,0,1,0,1,0,1])
-    testLevel.append([1,0,0,0,0,0,1,1,2,1,0,1,0,1,0])
-    testLevel.append([1,0,20,0,0,0,1,0,1,2,1,0,1,0,1])
-    testLevel.append([1,0,0,0,0,0,1,1,0,1,0,1,0,1,0])
-    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,4,1,0,1])
-    testLevel.append([1,14,0,0,0,0,1,1,2,1,0,1,4,1,0])
-    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
-    testLevel.append([1,0,0,0,10,0,1,1,0,1,2,1,0,1,0])
-    testLevel.append([1,0,15,0,0,0,1,0,1,0,1,0,1,0,1])
-    testLevel.append([1,0,0,0,21,0,1,1,2,1,0,1,0,1,0])
-    testLevel.append([1,0,21,0,0,0,1,0,1,0,1,0,1,0,1])
-    testLevel.append([1,0,0,16,0,0,1,1,0,1,0,1,0,1,0])
-    testLevel.append([1,0,0,0,0,0,1,0,1,0,1,0,1,0,1])
-
     testLevel = level
 
     # Create game objects
     clock = pygame.time.Clock()
-    hud = HUD()
+    hud = HUD(hi_score)
     paddle = Paddle()
     testball = Ball(BALL_INITIAL_POSITION, 0)
     spawner = Spawner(testLevel)
@@ -229,40 +93,14 @@ def game(screen, level):
             if event.type == QUIT:
                 return
             if event.type == KEYDOWN:
-                # FOR TESTING
                 if event.key == K_ESCAPE:
+                    song.stop()
                     return False
                 if event.key == K_f:
                     pygame.display.toggle_fullscreen()
                 if event.key == K_q:
                     pygame.font.quit()
                     pygame.quit()
-
-                # FOR TESTING
-                if event.key == K_LEFT:
-                    rotation += 0.5
-                    if rotation >= TWOPI:
-                        rotation -= TWOPI
-                    elif rotation < 0:
-                        rotation += TWOPI
-                    paddle.set_angle(rotation)
-                if event.key == K_RIGHT:
-                    rotation -= 0.5
-                    if rotation >= TWOPI:
-                        rotation -= TWOPI
-                    elif rotation < 0:
-                        rotation += TWOPI
-                    paddle.set_angle(rotation)
-                if event.key == K_r:
-                    testball.set_position(CENTER)
-                if event.key == K_w:
-                    testball.set_direction(3*PI/2)
-                if event.key == K_a:
-                    testball.set_direction(PI)
-                if event.key == K_s:
-                    testball.set_direction(PI/2)
-                if event.key == K_d:
-                    testball.set_direction(0)
                 if event.key == K_1:
                     ball = spawner.spawn_ball()
                     if ball != None:
@@ -278,9 +116,10 @@ def game(screen, level):
                     if fp != None:
                         fire_powerups.add(fp)
                         allsprites.add(fp)
-                if event.key == K_i:
-                    print fire_time
-
+                if event.key == K_4:
+                    fire_time = FIRE_POWERUP_EFFECT_TIME
+                if event.key == K_5:
+                    invincible = True
             elif event.type == KEYUP:
                 pass
             elif event.type == MOUSEMOTION: 
@@ -290,7 +129,6 @@ def game(screen, level):
                 elif rotation < 0:
                     rotation += TWOPI
                 paddle.set_angle(rotation)
-                #print "Rotation" + str(rotation)
 
         allsprites.update()
         hud.update()
@@ -324,18 +162,39 @@ def game(screen, level):
              fire_time -= 1
 
         screen.blit(background, (0, 0))
-        #screen.blit(text, (10, 10))
         allsprites.draw(screen)
         screen.blit(foreground, (0, 0))
         screen.blit(hud.get_image(), HUD_LOCATION)
         pygame.display.flip()
 
+        # Determine whether game should be ended
         if len(tiles.sprites()) < 1:
-            print "YOU WIN!"
+            win_screen, wsr = load_image("you_win.png", -1)
+            screen.blit(win_screen, (0,0))
+            pygame.display.flip()
+            time.sleep(2)
+            if hud.get_score() > hi_score:
+                write_hi_score(level, hud.get_score())
+                hi_score_font = pygame.font.Font(None, 100)
+                hi_score_surf = hi_score_font.render("HI SCORE "+str(hud.get_score()), 0, RED)
+                screen.blit(hi_score_surf, (50, 300))
+                pygame.display.flip()
+                time.sleep(2)
+            song.stop()
             return True
         if len(balls.sprites()) < 1:
-            print "GAME OVER"
-            return False
+            if invincible:
+                ball = spawner.spawn_ball()
+                if ball != None:
+                    balls.add(ball)
+                    allsprites.add(ball)
+            else:
+                lose_screen, lsr = load_image("game_over.png", -1)
+                screen.blit(lose_screen, (0,0))
+                pygame.display.flip()
+                time.sleep(2)
+                song.stop()
+                return False
 
 def paddle_collision(paddle, balls, hud):
     ballList = balls.sprites()
@@ -439,12 +298,10 @@ def foreground_collision(balls, allsprites):
             allsprites.remove(ball)
 
 ############ GAME OBJECTS ###########
-
 # Paddle
 # Location on screen determined by it's 'angle' attribute. Angle
 # cooresponds to the angle of a line drawn from the center of the screen
 # to the center of the paddle.
-
 class Paddle(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -475,7 +332,7 @@ class Paddle(pygame.sprite.Sprite):
         C = (int(Cx), int(Cy))
         D = (int(Dx), int(Dy))
         vertices = [A,B,D,C]
-        pygame.draw.polygon(self.image, BLUE, vertices)
+        pygame.draw.polygon(self.image, WHITE, vertices)
 
     def _set_position(self, angle):
         self.rect.center = [(CENTER[X] + PADDLE_SWING_RADIUS * math.cos(angle)), (CENTER[Y] + PADDLE_SWING_RADIUS * math.sin(angle))]
@@ -491,6 +348,9 @@ class Ball(pygame.sprite.Sprite):
         self.image = pygame.Surface([BALL_WIDTH, BALL_HEIGHT])
         self.image.set_colorkey(BLACK)
         pygame.draw.circle(self.image, RED, [BALL_RADIUS, BALL_RADIUS], BALL_RADIUS)
+        self.flame1, self.rect = load_image('flame.png', -1)
+        self.flame2, self.rect = load_image('flame2.png', -1)
+
         if fire_time > 1:
             pygame.draw.circle(self.image, YELLOW, [BALL_RADIUS, BALL_RADIUS], BALL_RADIUS)
         image = self.image.convert_alpha()
@@ -505,12 +365,18 @@ class Ball(pygame.sprite.Sprite):
         newy = self.pos[Y] + self.speed * math.sin(self.direction)
         self.pos = [newx, newy]
         self.rect.center = self.pos
+
         if fire_time == FIRE_POWERUP_EFFECT_TIME-1:
-            pygame.draw.circle(self.image, YELLOW, [BALL_RADIUS, BALL_RADIUS], BALL_RADIUS)
-            print "ON"
+            self.image = self.flame1 
+        elif fire_time < FIRE_POWERUP_EFFECT_TIME-1 and fire_time > 1:
+            if fire_time % 10 == 0:
+                self.image = self.flame2
+            elif fire_time % 5 == 0:
+                self.image = self.flame1
         elif fire_time == 1:
+            self.image = pygame.Surface([BALL_WIDTH, BALL_HEIGHT])
+            self.image.set_colorkey(BLACK)
             pygame.draw.circle(self.image, RED, [BALL_RADIUS, BALL_RADIUS], BALL_RADIUS)
-            print "OFF"
 
     def set_position(self, pos):
         self.pos = pos
@@ -538,16 +404,15 @@ class Tile(pygame.sprite.Sprite):
     def __init__(self, loc, val):
         pygame.sprite.Sprite.__init__(self)
         self.value = val
-        self.image = pygame.Surface([TILE_WIDTH, TILE_HEIGHT])
         if self.value == 1:
-            self.image.fill(GREEN)
+            self.image, self.rect = load_image('green_tile.png', -1)
         elif self.value == 2:
-            self.image.fill(BLUE)
+            self.image, self.rect = load_image('blue_tile.png', -1)
         elif self.value == 4:
-            self.image.fill(VIOLET)
+            self.image, self.rect = load_image('violet_tile.png', -1)
         else:
             self.image.fill(GREY)
-        self.rect = self.image.get_rect()
+            self.rect = self.image.get_rect()
         self.pos = loc
 
     def update(self):
@@ -562,9 +427,7 @@ class Tile(pygame.sprite.Sprite):
 class Ball_Powerup(pygame.sprite.Sprite):
     def __init__(self, loc):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface([TILE_WIDTH, TILE_HEIGHT])
-        self.image.fill(YELLOW)
-        self.rect = self.image.get_rect()
+        self.image, self.rect = load_image('balls.png', -1)
         self.pos = loc
         self.time = BALL_POWERUP_TIME
 
@@ -581,9 +444,7 @@ class Ball_Powerup(pygame.sprite.Sprite):
 class Fire_Powerup(pygame.sprite.Sprite):
     def __init__(self, loc):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface([TILE_WIDTH, TILE_HEIGHT])
-        self.image.fill(ORANGE)
-        self.rect = self.image.get_rect()
+        self.image, self.rect = load_image('flame.png', -1)
         self.pos = loc
         self.time = FIRE_POWERUP_TIME 
 
@@ -659,24 +520,27 @@ class Spawner:
         return Fire_Powerup(loc)
 
 class HUD(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, hi):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface([HUD_WIDTH, HUD_HEIGHT])
-        self.image.fill(CYAN)
-        self.image.set_colorkey(CYAN)
+        self.image.fill(WHITE)
+        self.image.set_colorkey(WHITE)
         self.rect = self.image.get_rect()
 
         self.scorefont = pygame.font.Font(None, 24)
+        self.hiscorefont = pygame.font.Font(None, 20)
         self.multfont = pygame.font.Font(None, 40)
 
         self.score = 0
+        self.hi_score = hi
         self.add = SCORE_BLOCK
         self.addadd = SCORE_BLOCK 
         self.multiplier = 1
 
     def update(self):
-        self.image.fill(CYAN)
+        self.image.fill(WHITE)
         scoresurf = self.scorefont.render("Score " + str(self.score), 0, ORANGE)
+        hiscoresurf = self.hiscorefont.render("Hi Score " + str(self.hi_score), 0, CYAN)
         if self.multiplier == 2:
             multsurf = self.multfont.render("X" + str(self.multiplier), 0, BLUE)
         elif self.multiplier == 4:
@@ -688,6 +552,7 @@ class HUD(pygame.sprite.Sprite):
 
         self.image.blit(scoresurf, SCORE_TEXT_LOCATION)
         self.image.blit(multsurf, MULT_TEXT_LOCATION)
+        self.image.blit(hiscoresurf, HISCORE_TEXT_LOCATION)
         image = self.image.convert_alpha()
 
     def reset(self):
@@ -731,6 +596,192 @@ def draw_tiles(level, tileGroup):
                 tileGroup.add(Tile((x,y), tile))
             x += TILE_WIDTH
         y += TILE_HEIGHT
+
+def menu(screen):
+    # Load background image
+    background, brt = load_image("nebula.png", None)
+
+    # Blit to screen
+    screen.blit(background, (0, 0))
+    pygame.display.flip()
+
+    menu_font = pygame.font.Font(None, 32)
+
+    # Create Main menu text surf
+    main_menu_surf = pygame.Surface(screen.get_size())
+    main_menu_surf.set_colorkey(BLACK)
+    main_menu_text = ["[F1] Play Game", "[F2] How To Play", "[ESC] Quit"]
+    line_space = 0
+    for text in main_menu_text:
+        textsurf = menu_font.render(text, 0, WHITE)
+        main_menu_surf.blit(textsurf, (MENU_TEXT_LOCATION[X]+180, MENU_TEXT_LOCATION[Y] + line_space))
+        line_space += MENU_TEXT_SPACING
+
+    # Create level menu text surf
+    level_menu_surf = pygame.Surface(screen.get_size())
+    level_menu_surf.set_colorkey(BLACK)
+    level_menu_text = ["[F1] Level 1      HI: " + str(get_hi_score(levels.L1))]
+    level_menu_text.append("[F2] Level 2      HI: " + str(get_hi_score(levels.L2)))
+    level_menu_text.append("[F3] Level 3      HI: " + str(get_hi_score(levels.L3)))
+    level_menu_text.append("[F4] Level 4      HI: " + str(get_hi_score(levels.L4)))
+    level_menu_text.append("[ESC] Back")
+
+    line_space = 0
+    for text in level_menu_text:
+        textsurf = menu_font.render(text, 0, WHITE)
+        level_menu_surf.blit(textsurf, (MENU_TEXT_LOCATION[X], MENU_TEXT_LOCATION[Y] + line_space))
+        line_space += MENU_TEXT_SPACING
+
+    # Create how to play menu text surf
+    menu_font = pygame.font.Font(None, 24)
+    howto_menu_surf = pygame.Surface(screen.get_size())
+    howto_menu_surf.set_colorkey(BLACK)
+    howto_menu_text = ["Controls:"]
+    howto_menu_text.append("Mouse: Rotate paddle")
+    howto_menu_text.append("ESC: Return to menu")
+    howto_menu_text.append("Q: Quit game")
+    howto_menu_text.append("F: Fullscreen")
+    howto_menu_text.append("")
+    howto_menu_text.append("Cheats:")
+    howto_menu_text.append("1: Spawn ball")
+    howto_menu_text.append("2: Spawn ball powerup")
+    howto_menu_text.append("3: Spawn flame powerup")
+    howto_menu_text.append("4: Turn balls into flames")
+    howto_menu_text.append("5: Invincibility mode")
+    howto_menu_text.append("")
+    howto_menu_text.append("                                                                                   ESC: Back")
+
+    line_space = 0
+    for text in howto_menu_text:
+        textsurf = menu_font.render(text, 0, WHITE)
+        howto_menu_surf.blit(textsurf, (50, 25 + line_space))
+        line_space += MENU_TEXT_SPACING
+
+    howto_menu_text = ["How to play:"]
+    howto_menu_text.append("Use your paddle to keep")
+    howto_menu_text.append("the ball within the circular")
+    howto_menu_text.append("bounds. Powerups will aid you")
+    howto_menu_text.append("in your quest to destroy all the")
+    howto_menu_text.append("blocks on the screen and to get")
+    howto_menu_text.append("the highest score! The more")
+    howto_menu_text.append("blocks you hit before the ball")
+    howto_menu_text.append("hits the paddle, the faster ")
+    howto_menu_text.append("your score increases. Get blue")
+    howto_menu_text.append("and purple blocks to get an even")
+    howto_menu_text.append("higher combo multiplier. Don't")
+    howto_menu_text.append("let the ball leave the playing")
+    howto_menu_text.append("field or else game over!!")
+
+    line_space = 0
+    for text in howto_menu_text:
+        textsurf = menu_font.render(text, 0, WHITE)
+        howto_menu_surf.blit(textsurf, (300, 25 + line_space))
+        line_space += 28
+
+    # Blit text to screen
+    screen.blit(background, (0, 0))
+    screen.blit(main_menu_surf, (0,0))
+    pygame.display.flip()
+
+    clock = pygame.time.Clock()
+    menu = "main"
+
+    song = load_sound("menu_music.ogg")
+    song.play(100)
+
+    while 1:
+        clock.tick(FPS)
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                return
+            if event.type == KEYDOWN:
+                if event.key == K_f:
+                    pygame.display.toggle_fullscreen()
+                if event.key == K_q:
+                    pygame.font.quit()
+                    pygame.quit()
+                if event.key == K_ESCAPE:
+                    if menu == "main":
+                        pygame.font.quit()
+                        pygame.quit()
+                    menu = "main"
+                if event.key == K_F1:
+                    if menu == "main":
+                        menu = "level"
+                    elif menu == "level":
+                        song.stop()
+                        play_level(screen, 1)
+                if event.key == K_F2:
+                    if menu == "main":
+                        menu = "howto"
+                    elif menu == "level":
+                        song.stop()
+                        play_level(screen, 2)
+                if event.key == K_F3:
+                    if menu == "level":
+                        song.stop()
+                        play_level(screen, 3)
+                if event.key == K_F4:
+                    if menu == "level":
+                        song.stop()
+                        play_level(screen, 4)
+
+        screen.blit(background, (0, 0))
+        if menu == "main":
+            screen.blit(main_menu_surf, (0,0))
+        elif menu == "level":
+            screen.blit(level_menu_surf, (0,0))
+        elif menu == "howto":
+            screen.blit(howto_menu_surf, (0,0))
+
+        pygame.display.flip()
+
+def get_hi_score(level):
+    if level == levels.L1:
+        file_name = "scores/l1"
+    elif level == levels.L2:
+        file_name = "scores/l2"
+    elif level == levels.L3:
+        file_name = "scores/l3"
+    elif level == levels.L4:
+        file_name = "scores/l4"
+    try:
+        f = open(file_name, "r")
+    except:
+        return 0
+    s = int(f.read()) 
+    f.close()
+    return s
+    
+def write_hi_score(level, score):
+    if level == levels.L1:
+        file_name = "scores/l1"
+    elif level == levels.L2:
+        file_name = "scores/l2"
+    elif level == levels.L3:
+        file_name = "scores/l3"
+    elif level == levels.L4:
+        file_name = "scores/l4"
+    try:
+        open(file_name, "w").close()
+        f = open(file_name, "w")
+        f.write(str(score))
+        f.close()
+    except:
+        return
+
+def play_level(screen, level):
+    level_list = [levels.L1, levels.L2, levels.L3, levels.L4]
+
+    i = 1
+    for l in level_list:
+        if i < level:
+            i += 1
+            continue
+        else:
+            if not game(screen, l):
+                break
 
 if __name__ == '__main__':
     try:
